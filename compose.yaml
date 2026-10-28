@@ -4,4 +4,5 @@ services:
     image: php:8.5-apache-bookworm
     ports:
       - "127.0.0.1:8090:80"
-      
+    volumes:
+    - ./src:/var/www/html
