@@ -1,4 +1,7 @@
 <?php
+
+var_dump(0 === '0');
+
 $duration = 241;
 
 if ($duration === 0) {
