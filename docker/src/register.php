@@ -51,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 		if (empty($errores)) {
 			$hash = password_hash($password, PASSWORD_DEFAULT);
-				$user = [
-					'alias' => $alias,
-					'email' => $email,
-					'password_hash' => $hash
-				];
+			$user = [
+				'alias' => $alias,
+				'email' => $email,
+				'password_hash' => $hash
+			];
 		}
 	}
 }
