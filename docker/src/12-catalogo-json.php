@@ -1,7 +1,10 @@
 <?php
 
+require_once __DIR__ . '/lib/acceso.php';
 require_once __DIR__ . '/lib/canciones.php';
-require __DIR__ . '/lib/almacen-json.php';
+require_once __DIR__ . '/lib/almacen-json.php';
+
+$songs = leer_json_bloqueado('/var/www/data/canciones.json');
 
 ?>
 
