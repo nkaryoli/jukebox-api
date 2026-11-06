@@ -58,22 +58,12 @@ $songs = leer_json_bloqueado('/var/www/data/canciones.json');
                             Editar canción
                         </a>
                     </p>
-                    <form method="POST">
-                        <input
-                            type="hidden"
-                            name="csrf"
-                            value="<?= htmlspecialchars($_SESSION['csrf'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
-                        >
-                        <input
-                            type="hidden"
-                            name="id"
-                            value="<?= (int)$song['id'] ?>"
-                        >
-                        <button type="submit" disabled>
+                    <p>
+                        <a href="cancion-eliminar.php?id=<?= (int)$song['id'] ?>">
                             Eliminar canción
-                        </button>
-                    </form>
-                <?php endif; ?>
+                        </a>
+                    </p>
+                    <?php endif; ?>
             </section>
         <?php endforeach; ?>
     <?php endif; ?>
