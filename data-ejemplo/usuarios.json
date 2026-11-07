@@ -1,1 +1,14 @@
-[]
+[
+    {
+        "id": 1,
+        "alias": "Alias",
+        "email": "correo@gmail.com",
+        "password_hash": "$2y$12$QD0Fmhdj8zkxVtks0yQVGOoC8LeuxbHQoHikQ6m6S.kt4wz8RfbFe"
+    },
+    {
+        "id": 2,
+        "alias": "Alias2",
+        "email": "correo2@gmail.com",
+        "password_hash": "$2y$12$\/Qw86bjF4YOVOWXYZ2OuTOK2u09oKQS2wY7gghlcV2qrXEED0WT86"
+    }
+]
