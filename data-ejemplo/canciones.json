@@ -1,0 +1,66 @@
+[
+    {
+        "id":  1,
+        "title":  "Yellow Sorrows",
+        "artist":  "Marvrix",
+        "category":  "rock",
+        "duration":  215,
+        "src":  "audio/song1.mp3"
+    },
+    {
+        "id":  2,
+        "title":  "Paradise",
+        "artist":  "Alana Jordan",
+        "category":  "electronica",
+        "duration":  195,
+        "src":  "audio/song2.mp3"
+    },
+    {
+        "id":  3,
+        "title":  "Yellow Mood",
+        "artist":  "LP Studio Music",
+        "category":  "bandas-sonoras",
+        "duration":  210,
+        "src":  "audio/song3.mp3"
+    },
+    {
+        "id":  4,
+        "title":  "Turn it Louder",
+        "artist":  "Aylex",
+        "category":  "electronica",
+        "duration":  222,
+        "src":  "audio/song4.mp3"
+    },
+    {
+        "id":  5,
+        "title":  "All Night",
+        "artist":  "Burgundy",
+        "category":  "electronica",
+        "duration":  188,
+        "src":  "audio/song5.mp3"
+    },
+    {
+        "id":  6,
+        "title":  "Faster",
+        "artist":  "Zambolino",
+        "category":  "electronica",
+        "duration":  240,
+        "src":  "audio/song6.mp3"
+    },
+    {
+        "id":  7,
+        "title":  "Combat",
+        "artist":  "Damtaro",
+        "category":  "bandas-sonoras",
+        "duration":  205,
+        "src":  "audio/song7.mp3"
+    },
+    {
+        "id":  8,
+        "title":  "Atmospheric Guitar",
+        "artist":  "Pufino",
+        "category":  "rock",
+        "duration":  260,
+        "src":  "audio/song8.mp3"
+    }
+]
