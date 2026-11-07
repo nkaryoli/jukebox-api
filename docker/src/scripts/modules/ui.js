@@ -110,7 +110,7 @@ export const updateCurrentSongUI = (song, isFav = false) => {
     }
     if (elements.currentSongTitle) elements.currentSongTitle.textContent = song.title;
     if (elements.currentSongArtist) elements.currentSongArtist.textContent = song.artist;
-    if (elements.currentSongGenre) elements.currentSongGenre.textContent = song.genre || "Música";
+    if (elements.currentSongGenre) elements.currentSongGenre.textContent = song.category || song.genre || "Música";
     if (elements.currentSongImg) {
         elements.currentSongImg.src = coverUrl;
         elements.currentSongImg.onerror = () => { elements.currentSongImg.src = "assets/img/note.jpg"; };
@@ -127,7 +127,7 @@ export const updateCurrentSongUI = (song, isFav = false) => {
     }
     if (elements.expandedSongTitle) elements.expandedSongTitle.textContent = song.title;
     if (elements.expandedSongArtist) elements.expandedSongArtist.textContent = song.artist;
-    if (elements.expandedSongGenre) elements.expandedSongGenre.textContent = song.genre || "Música";
+    if (elements.expandedSongGenre) elements.expandedSongGenre.textContent = song.category || song.genre || "Música";
 
     updateFavoriteCurrentBtn(isFav);
 };
@@ -326,10 +326,10 @@ export const renderPlaylist = (
         author.textContent = song.artist;
         metaWrapper.appendChild(author);
 
-        if (song.genre) {
+        const catOrGenre = song.category || song.genre; if (catOrGenre) {
             const genre = document.createElement("span");
             genre.className = "text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded";
-            genre.textContent = song.genre;
+            genre.textContent = catOrGenre;
             metaWrapper.appendChild(genre);
         }
 

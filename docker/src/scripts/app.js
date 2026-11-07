@@ -388,10 +388,22 @@ const initApp = async () => {
     // 4. Configurar eventos de la interfaz
     setupEventListeners();
 
-    // 5. Cargar canciones iniciales y renderizar
+    // 5. Cargar canciones iniciales y renderizar desde la API
     const songs = await fetchSongs();
-    if (songs && songs.length > 0) {
+    if (Array.isArray(songs) && songs.length > 0) {
         changeSong(0, false);
+        refreshViews();
+    } else {
+        if (elements.playBtn) {
+            elements.playBtn.disabled = true;
+            elements.playBtn.classList.add("opacity-50", "cursor-not-allowed");
+            elements.playBtn.title = "No hay canciones disponibles en el catálogo";
+        }
+        if (elements.currentSongTitle) elements.currentSongTitle.textContent = "Catálogo vacío";
+        if (elements.currentSongArtist) elements.currentSongArtist.textContent = "Añade canciones desde el catálogo";
+        if (elements.currentSongGenre) elements.currentSongGenre.textContent = "-";
+        if (elements.songTitle) elements.songTitle.textContent = "Catálogo vacío";
+        if (elements.songAuthor) elements.songAuthor.textContent = "-";
         refreshViews();
     }
 };

@@ -1,6 +1,7 @@
 /**
  * Módulo: playlist.js
- * Descripción: Gestiona la carga del catálogo de canciones (music.json), el índice de reproducción activo, la navegación entre pistas y el filtrado por búsqueda.
+ * Descripción: Gestiona la carga del catálogo de canciones desde el endpoint API (/api/canciones.php),
+ * el índice de reproducción activo, la navegación entre pistas y el filtrado por búsqueda.
  */
 
 let songs = [];
@@ -8,30 +9,49 @@ let currentIndex = 0;
 const ORDER_STORAGE_KEY = "music_player_playlist_order";
 
 /**
- * Carga el catálogo de canciones desde el archivo JSON local.
+ * Carga el catálogo de canciones desde el endpoint de la API.
  * @returns {Promise<Array>} Promesa que resuelve en la lista de canciones cargadas.
  */
 export const fetchSongs = async () => {
     try {
-        const response = await fetch("/src/data/music.json");
-        if (!response.ok) throw new Error("No se pudo cargar el catálogo musical");
+        const response = await fetch("./api/canciones.php");
+        if (!response.ok) {
+            throw new Error(`Error HTTP ${response.status}: no se pudo cargar el catálogo musical`);
+        }
 
         const loadedSongs = await response.json();
+        if (!Array.isArray(loadedSongs)) {
+            throw new Error("El catálogo recibido no es una lista válida de canciones");
+        }
+
+        if (loadedSongs.length === 0) {
+            songs = [];
+            currentIndex = 0;
+            return [];
+        }
+
         let storedOrder = [];
         try {
             storedOrder = JSON.parse(localStorage.getItem(ORDER_STORAGE_KEY) || "[]");
         } catch (error) {
             console.error("Error al leer el orden de reproducción:", error);
         }
+
         const songsById = new Map(loadedSongs.map((song) => [song.id, song]));
         songs = [
             ...storedOrder.map((id) => songsById.get(id)).filter(Boolean),
             ...loadedSongs.filter((song) => !storedOrder.includes(song.id))
         ];
+
+        if (currentIndex < 0 || currentIndex >= songs.length) {
+            currentIndex = 0;
+        }
+
         return songs;
     } catch (error) {
         console.error("Error al cargar el catálogo de canciones:", error);
         songs = [];
+        currentIndex = 0;
         return [];
     }
 };
@@ -127,7 +147,7 @@ export const getPreviousIndex = (isShuffle = false) => {
 };
 
 /**
- * Filtra las canciones según un término de búsqueda (título, artista o género).
+ * Filtra las canciones según un término de búsqueda (título, artista o categoría/género).
  * Retorna cada canción enriquecida con su 'originalIndex' para vincularla con el catálogo general.
  * @param {string} query Texto a buscar.
  * @returns {Array} Canciones que coinciden con la búsqueda.
@@ -139,8 +159,9 @@ export const filterSongs = (query = "") => {
         .filter((song) => {
             if (!trimmed) return true;
             return (
-                song.title.toLowerCase().includes(trimmed) ||
-                song.artist.toLowerCase().includes(trimmed) ||
+                (song.title && song.title.toLowerCase().includes(trimmed)) ||
+                (song.artist && song.artist.toLowerCase().includes(trimmed)) ||
+                (song.category && song.category.toLowerCase().includes(trimmed)) ||
                 (song.genre && song.genre.toLowerCase().includes(trimmed))
             );
         });
