@@ -22,6 +22,10 @@ require_once __DIR__ . '/lib/acceso.php';
 				<i class="fa-solid fa-list"></i>
 				<span>Catálogo</span>
 			</a>
+			<a href="canciones-ajax.php" class="ml-2 px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-800 hover:bg-neutral-700 text-zinc-300 hover:text-white transition flex items-center gap-2 border border-zinc-700">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-no-axes-gantt preview-icon"><path d="M6 5h12"/><path d="M4 12h10"/><path d="M12 19h8"/></svg>
+			Gestión AJAX
+			</a>
 		</div>
 		<div id="header-search" class="flex items-center gap-3">
 			<div class="relative flex items-center">
