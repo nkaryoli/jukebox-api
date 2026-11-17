@@ -26,10 +26,7 @@ if (!isset($_SESSION['usuario_id'])) {
 try {
     $songs = leer_json_bloqueado('/var/www/data/canciones.json');
 
-    responder_json(200, [
-        'ok' => true,
-        'data' => $songs
-    ]);
+    responder_json(200, array_values($songs));
 } catch (Throwable $e) {
     responder_json(500, [
         'ok' => false,
