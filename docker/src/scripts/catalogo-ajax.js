@@ -1,7 +1,10 @@
 const tbody = document.getElementById("tabla-canciones");
 const mensaje = document.getElementById("mensaje");
+const formulario = document.getElementById("formulario-cancion");
+const botonGuardar = document.getElementById("boton-guardar");
 
 let canciones = [];
+let operacionEnCurso = false;
 
 function formatearDuracion(total) {
   const minutos = Math.floor(total / 60);
@@ -11,6 +14,15 @@ function formatearDuracion(total) {
 
 function mostrarMensaje(texto) {
   mensaje.textContent = texto;
+}
+
+function leerToken() {
+  return document.querySelector('meta[name="csrf-token"]').content;
+}
+
+function bloquearAcciones(bloquear) {
+  operacionEnCurso = bloquear;
+  botonGuardar.disabled = bloquear;
 }
 
 function renderizarCanciones(lista) {
@@ -29,12 +41,8 @@ function renderizarCanciones(lista) {
   for (const cancion of lista) {
     const fila = document.createElement("tr");
 
-    for (const valor of [
-      cancion.title,
-      cancion.artist,
-      cancion.category,
-      formatearDuracion(cancion.duration),
-    ]) {
+    for (const valor of 
+      [ cancion.title, cancion.artist, cancion.category, formatearDuracion(cancion.duration)]) {
       const celda = document.createElement("td");
       celda.textContent = valor;
       fila.append(celda);
@@ -73,15 +81,66 @@ async function cargarCatalogo() {
       throw new Error("La respuesta del servidor no contiene una lista.");
     }
 
-    console.log(contenido.data);
     canciones = contenido.data;
     renderizarCanciones(canciones);
     mostrarMensaje("");
   } catch (error) {
     mostrarMensaje("Error: " + error.message);
-  } finally {
-    // Aquí solo se retiraría el estado "cargando"; nunca se anuncia éxito.
   }
 }
+
+async function enviarAlta(evento) {
+  evento.preventDefault();
+  if (operacionEnCurso) {
+    return;
+  }
+
+  const nuevaCancion = {
+    title: formulario.elements.title.value,
+    artist: formulario.elements.artist.value,
+    category: formulario.elements.category.value,
+    duration: Number(formulario.elements.duration.value),
+    src: formulario.elements.src.value,
+  };
+
+  bloquearAcciones(true);
+  mostrarMensaje("Guardando…");
+
+  try {
+    const respuesta = await fetch("api/catalogo.php?action=create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": leerToken(),
+      },
+      body: JSON.stringify(nuevaCancion),
+    });
+    const contenido = await respuesta.json();
+
+    if (!respuesta.ok || contenido.ok !== true) {
+      throw new Error(contenido.error || "No se pudo guardar la canción.");
+    }
+    if (!Array.isArray(contenido.data)) {
+      throw new Error("La respuesta del servidor no contiene una lista.");
+    }
+
+    canciones = contenido.data;
+    renderizarCanciones(canciones);
+    formulario.reset();
+    mostrarMensaje("Canción añadida");
+  } catch (error) {
+    if (error instanceof TypeError) {
+      mostrarMensaje(
+        "No se ha podido confirmar el alta. Recarga la página y revisa la lista antes de reenviar.",
+      );
+    } else {
+      mostrarMensaje("Error: " + error.message);
+    }
+  } finally {
+    bloquearAcciones(false);
+  }
+}
+
+formulario.addEventListener("submit", enviarAlta);
 
 cargarCatalogo();
