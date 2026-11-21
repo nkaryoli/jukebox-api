@@ -30,7 +30,7 @@ function bloquearAcciones(bloquear) {
   operacionEnCurso = bloquear;
   botonGuardar.disabled = bloquear;
   botonCancelar.disabled = bloquear;
-  for (const boton of tbody.querySelectorAll('button[data-accion="editar"]')) {
+  for (const boton of tbody.querySelectorAll('button[data-accion]')) {
     boton.disabled = bloquear;
   }
 }
@@ -76,7 +76,7 @@ function renderizarCanciones(lista) {
     eliminar.textContent = "Eliminar";
     eliminar.dataset.id = cancion.id;
     eliminar.dataset.accion = "eliminar";
-    eliminar.disabled = true;
+    eliminar.disabled = operacionEnCurso;
 
     acciones.append(editar, " ", eliminar);
     fila.append(acciones);
@@ -207,10 +207,74 @@ async function enviarFormulario(evento) {
   }
 }
 
+async function eliminarCancion(id) {
+  if (!Number.isInteger(id) || id < 1) {
+    mostrarMensaje("Error: identificador no válido.");
+    return;
+  }
+  const elegida = canciones.find((cancion) => cancion.id === id);
+  if (!elegida) {
+    mostrarMensaje(
+      "Error: la canción ya no está en la lista. Recarga la página.",
+    );
+    return;
+  }
+
+  if (!window.confirm("¿Eliminar la canción «" + elegida.title + "»?")) {
+    mostrarMensaje("Eliminación cancelada");
+    return;
+  }
+
+  bloquearAcciones(true);
+  mostrarMensaje("Eliminando…");
+
+  try {
+    const respuesta = await fetch("api/catalogo.php?action=delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": leerToken(),
+      },
+      body: JSON.stringify({ id: id }),
+    });
+    const contenido = await respuesta.json();
+
+    if (!respuesta.ok || contenido.ok !== true) {
+      throw new Error(contenido.error || "No se pudo eliminar la canción.");
+    }
+    if (!Array.isArray(contenido.data)) {
+      throw new Error("La respuesta del servidor no contiene una lista.");
+    }
+
+    canciones = contenido.data;
+    if (idEditando === id) {
+      salirModoEdicion();
+    }
+    renderizarCanciones(canciones);
+    mostrarMensaje("Canción eliminada");
+  } catch (error) {
+    if (error instanceof TypeError) {
+      mostrarMensaje(
+        "No se ha podido confirmar la eliminación. Recarga la página y revisa la lista antes de reintentar.",
+      );
+    } else {
+      mostrarMensaje("Error: " + error.message);
+    }
+  } finally {
+    bloquearAcciones(false);
+  }
+}
+
 tbody.addEventListener("click", (evento) => {
-  const boton = evento.target.closest('button[data-accion="editar"]');
+  const boton = evento.target.closest('button[data-accion]');
   if (boton && !operacionEnCurso) {
     iniciarEdicion(Number(boton.dataset.id));
+  }
+  const id = Number(boton.dataset.id);
+  if (boton.dataset.accion === "editar") {
+    iniciarEdicion(id);
+  } else if (boton.dataset.accion === "eliminar") {
+    eliminarCancion(id);
   }
 });
 

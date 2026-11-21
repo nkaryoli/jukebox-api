@@ -164,4 +164,29 @@ if ($accion === 'update') {
     responderJson(200, ['ok' => true, 'data' => array_values($lista)]);
 }
 
+if ($accion === 'delete') {
+    exigirMetodo('POST');
+    comprobarToken();
+    $id = validarId(leerCuerpoJson());
+
+    try {
+        $lista = actualizar_json_bloqueado(RUTA_CANCIONES, function (array $canciones) use ($id): array {
+            foreach ($canciones as $posicion => $cancion) {
+                if (isset($cancion['id']) && $cancion['id'] === $id) {
+                    unset($canciones[$posicion]);
+                    return array_values($canciones);
+                }
+            }
+            throw new CancionNoEncontrada('No existe la canción ' . $id);
+        });
+    } catch (CancionNoEncontrada $error) {
+        responderJson(404, ['ok' => false, 'error' => 'La canción no existe.']);
+    } catch (Throwable $error) {
+        error_log('catalogo.php delete: ' . $error->getMessage());
+        responderJson(500, ['ok' => false, 'error' => 'No se pudo guardar el catálogo.']);
+    }
+
+    responderJson(200, ['ok' => true, 'data' => array_values($lista)]);
+}
+
 responderJson(400, ['ok' => false, 'error' => 'Acción todavía no disponible.']);
