@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../lib/sesion.php';
 require_once __DIR__ . '/../lib/almacen-json.php';
+require_once __DIR__ . '/../lib/canciones.php';
 
 const RUTA_CANCIONES = '/var/www/data/canciones.json';
 const ACCIONES = ['list', 'create', 'update', 'delete'];
-const CATEGORIAS = ['electronica', 'rock', 'bandas-sonoras'];
-const MAX_TEXTO = 80;
 
 function responderJson(int $codigo, array $datos): never {
     http_response_code($codigo);
@@ -56,55 +55,40 @@ function leerCuerpoJson(): array {
     return get_object_vars($objeto);
 }
 
-function rutasAudioPermitidas(): array {
-    $rutas = [];
-    foreach (glob(__DIR__ . '/../audio/*.mp3') ?: [] as $archivo) {
-        $rutas[] = 'audio/' . basename($archivo);
-    }
-    return $rutas;
-}
-
 function errorValidacion(string $mensaje): never {
     responderJson(422, ['ok' => false, 'error' => $mensaje]);
 }
 
+class CancionNoEncontrada extends RuntimeException{}
+
+function validarId(array $datos): int {
+    $id = $datos['id'] ?? null;
+    if (!is_int($id) || $id < 1) {
+        errorValidacion('El id debe ser un entero positivo.');
+    }
+    return $id;
+}
+
 function validarCancion(array $datos): array {
-    $limpio = [];
-
-    foreach (['title' => 'título', 'artist' => 'artista'] as $campo => $nombre) {
-        $valor = $datos[$campo] ?? null;
-        if (!is_string($valor)) {
-            errorValidacion("El campo $nombre debe ser texto.");
+    foreach (['title', 'artist', 'category', 'src'] as $campo) {
+        if (!is_string($datos[$campo] ?? null)) {
+            errorValidacion("El campo $campo debe ser texto.");
         }
-        $valor = trim($valor);
-        if ($valor === '') {
-            errorValidacion("El $nombre es obligatorio.");
-        }
-        if (mb_strlen($valor) > MAX_TEXTO) {
-            errorValidacion("El $nombre no puede superar los " . MAX_TEXTO . ' caracteres.');
-        }
-        $limpio[$campo] = $valor;
     }
 
-    $categoria = $datos['category'] ?? null;
-    if (!is_string($categoria) || !in_array($categoria, CATEGORIAS, true)) {
-        errorValidacion('La categoría no es válida.');
+    if (!is_int($datos['duration'] ?? null)) {
+        errorValidacion('La duración debe ser un número entero.');
     }
-    $limpio['category'] = $categoria;
 
-    $duracion = $datos['duration'] ?? null;
-    if (!is_int($duracion) || $duracion < 1 || $duracion > 1800) {
-        errorValidacion('La duración debe ser un entero entre 1 y 1800 segundos.');
+    $datos['duration'] = (string) $datos['duration'];
+
+    $resultado = validarDatosCancion($datos, categoriasPermitidas(), audiosPermitidos());
+
+    if ($resultado['errors'] !== []) {
+        errorValidacion((string) reset($resultado['errors']));
     }
-    $limpio['duration'] = $duracion;
 
-    $audio = $datos['src'] ?? null;
-    if (!is_string($audio) || !in_array($audio, rutasAudioPermitidas(), true)) {
-        errorValidacion('El audio seleccionado no está autorizado.');
-    }
-    $limpio['src'] = $audio;
-
-    return $limpio;
+    return $resultado['data'];
 }
 
 if (!isset($_SESSION['usuario_id'])) {
@@ -151,6 +135,33 @@ if ($accion === 'create') {
     }
 
     responderJson(201, ['ok' => true, 'data' => array_values($lista)]);
+}
+
+if ($accion === 'update') {
+    exigirMetodo('POST');
+    comprobarToken();
+    $cuerpo = leerCuerpoJson();
+    $id = validarId($cuerpo);
+    $datos = validarCancion($cuerpo);
+
+    try {
+        $lista = actualizar_json_bloqueado(RUTA_CANCIONES, function (array $canciones) use ($id, $datos): array {
+            foreach ($canciones as $posicion => $cancion) {
+                if (isset($cancion['id']) && $cancion['id'] === $id) {
+                    $canciones[$posicion] = ['id' => $id] + $datos;
+                    return array_values($canciones);
+                }
+            }
+            throw new CancionNoEncontrada('No existe la canción ' . $id);
+        });
+    } catch (CancionNoEncontrada $error) {
+        responderJson(404, ['ok' => false, 'error' => 'La canción no existe.']);
+    } catch (Throwable $error) {
+        error_log('catalogo.php update: ' . $error->getMessage());
+        responderJson(500, ['ok' => false, 'error' => 'No se pudo guardar el catálogo.']);
+    }
+
+    responderJson(200, ['ok' => true, 'data' => array_values($lista)]);
 }
 
 responderJson(400, ['ok' => false, 'error' => 'Acción todavía no disponible.']);

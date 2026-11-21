@@ -34,4 +34,4 @@ Usuario → JavaScript con fetch (navegador) → api/catalogo.php (PHP, servidor
 ## Qué probar y resultado esperado
 - Consultar sin sesión: 401, "Debes iniciar sesión."
 - Editar un id inexistente: 404, "La canción no existe."
-- Duración negativa: 422, "La duración debe ser un entero entre 1 y 1800 segundos."
+- Duración negativa: 422, "La duración debe estar entre 1 y 1800 segundos."

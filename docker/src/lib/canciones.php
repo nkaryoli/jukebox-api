@@ -78,4 +78,17 @@ function validarDatosCancion( array $datos, array $allowedCategories, array $all
     ];
 }
 
+function categoriasPermitidas(): array {
+    return ['electronica', 'rock', 'bandas-sonoras'];
+}
+
+function audiosPermitidos(): array {
+    $rutas = [];
+    foreach (glob(__DIR__ . '/../audio/*.mp3') ?: [] as $archivo) {
+        $rutas[] = 'audio/' . basename($archivo);
+    }
+    sort($rutas, SORT_NATURAL);
+    return $rutas;
+}
+
 ?>

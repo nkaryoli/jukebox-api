@@ -26,6 +26,7 @@ foreach (glob(__DIR__ . '/audio/*.mp3') ?: [] as $archivo) {
 	<p id="mensaje" role="status" aria-live="polite"></p>
 	<form id="formulario-cancion">
 		<h2 id="titulo-formulario">Añadir canción</h2>
+		<p id="aviso-edicion" hidden></p>
 		<p>
 			<label for="title">Título</label>
 			<input type="text" id="title" name="title" required maxlength="80">
@@ -59,6 +60,7 @@ foreach (glob(__DIR__ . '/audio/*.mp3') ?: [] as $archivo) {
 			</select>
 		</p>
 		<button type="submit" id="boton-guardar">Añadir canción</button>
+    <button type="button" id="boton-cancelar" hidden>Cancelar</button>
 	</form>
 	<table>
 		<caption>Canciones del catálogo</caption>

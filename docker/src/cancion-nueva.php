@@ -12,17 +12,8 @@ $category = '';
 $duration = '';
 $src = '';
 
-$allowedCategories = [
-    'electronica',
-    'rock',
-    'bandas-sonoras'
-];
-
-$allowedSources = [];
-
-for ($i = 1; $i <= 12; $i++) {
-    $allowedSources[] = 'audio/song' . $i . '.mp3';
-}
+$allowedCategories = categoriasPermitidas();
+$allowedSources = audiosPermitidos();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
