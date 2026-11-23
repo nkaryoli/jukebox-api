@@ -22,6 +22,9 @@ $songs = leer_json_bloqueado('/var/www/data/canciones.json');
     <p>
         <a href="cancion-nueva.php">Añadir una canción</a>
     </p>
+    <p>
+        <a href="canciones-ajax.php">Gestión AJAX</a>
+    </p>
     <?php if (empty($songs)): ?>
         <p>Todavía no hay canciones.</p>
     <?php else: ?>

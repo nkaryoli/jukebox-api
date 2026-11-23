@@ -12,6 +12,9 @@ let operacionEnCurso = false;
 
 let idEditando = null;
 
+const TEXTO_RED_CONSULTA = "No se pudo conectar con el servidor. Comprueba la conexión e inténtalo de nuevo.";
+const TEXTO_RED_CAMBIO = "No se ha podido confirmar la operación. Recarga la página y revisa la lista antes de reintentar.";
+
 function formatearDuracion(total) {
   const minutos = Math.floor(total / 60);
   const segundos = String(total % 60).padStart(2, "0");
@@ -26,11 +29,21 @@ function leerToken() {
   return document.querySelector('meta[name="csrf-token"]').content;
 }
 
+function mensajeDeError(error, textoRed) {
+  if (error instanceof TypeError) {
+    return textoRed;
+  }
+  if (error instanceof SyntaxError) {
+    return "Error: el servidor no devolvió una respuesta JSON válida.";
+  }
+  return "Error: " + error.message;
+}
+
 function bloquearAcciones(bloquear) {
   operacionEnCurso = bloquear;
   botonGuardar.disabled = bloquear;
   botonCancelar.disabled = bloquear;
-  for (const boton of tbody.querySelectorAll('button[data-accion]')) {
+  for (const boton of tbody.querySelectorAll("button[data-accion]")) {
     boton.disabled = bloquear;
   }
 }
@@ -84,30 +97,61 @@ function renderizarCanciones(lista) {
   }
 }
 
+async function interpretarRespuesta(respuesta, textoError) {
+  const contenido = await respuesta.json();
+  if (!respuesta.ok || contenido.ok !== true) {
+    throw new Error(contenido.error || textoError);
+  }
+  if (!Array.isArray(contenido.data)) {
+    throw new Error("La respuesta del servidor no contiene una lista.");
+  }
+  return contenido.data;
+}
+
+async function enviarCambio(accion, datos) {
+  const respuesta = await fetch("api/catalogo.php?action=" + accion, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": leerToken(),
+    },
+    body: JSON.stringify(datos),
+  });
+  return interpretarRespuesta(respuesta, "No se pudo completar la operación.");
+}
+
+async function ejecutarCambio(accion, datos, textoEspera, textoExito, alExito) {
+  bloquearAcciones(true);
+  mostrarMensaje(textoEspera);
+
+  try {
+    canciones = await enviarCambio(accion, datos);
+    alExito();
+    renderizarCanciones(canciones);
+    mostrarMensaje(textoExito);
+  } catch (error) {
+    mostrarMensaje(mensajeDeError(error, TEXTO_RED_CAMBIO));
+  } finally {
+    bloquearAcciones(false);
+  }
+}
+
 async function cargarCatalogo() {
-    mostrarMensaje('Cargando catálogo…');
-    let hayError = false;
-    try {
-        const respuesta = await fetch('api/catalogo.php?action=list');
-        const contenido = await respuesta.json();
+  mostrarMensaje("Cargando catálogo…");
+  let hayError = false;
 
-        if (!respuesta.ok || contenido.ok !== true) {
-            throw new Error(contenido.error || 'No se pudo consultar.');
-        }
-        if (!Array.isArray(contenido.data)) {
-            throw new Error('La respuesta del servidor no contiene una lista.');
-        }
-
-        canciones = contenido.data;
-        renderizarCanciones(canciones);
-    } catch (error) {
-        hayError = true;
-        mostrarMensaje('Error: ' + error.message);
-    } finally {
-        if (!hayError) {
-            mostrarMensaje('');
-        }
+  try {
+    const respuesta = await fetch("api/catalogo.php?action=list");
+    canciones = await interpretarRespuesta(respuesta, "No se pudo consultar.");
+    renderizarCanciones(canciones);
+  } catch (error) {
+    hayError = true;
+    mostrarMensaje(mensajeDeError(error, TEXTO_RED_CONSULTA));
+  } finally {
+    if (!hayError) {
+      mostrarMensaje("");
     }
+  }
 }
 
 function salirModoEdicion() {
@@ -150,7 +194,7 @@ function iniciarEdicion(id) {
   formulario.elements.title.focus();
 }
 
-async function enviarFormulario(evento) {
+function enviarFormulario(evento) {
   evento.preventDefault();
   if (operacionEnCurso) {
     return;
@@ -168,46 +212,16 @@ async function enviarFormulario(evento) {
     datos.id = idEditando;
   }
 
-  bloquearAcciones(true);
-  mostrarMensaje("Guardando…");
-
-  try {
-    const accion = editando ? "update" : "create";
-    const respuesta = await fetch("api/catalogo.php?action=" + accion, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": leerToken(),
-      },
-      body: JSON.stringify(datos),
-    });
-    const contenido = await respuesta.json();
-
-    if (!respuesta.ok || contenido.ok !== true) {
-      throw new Error(contenido.error || "No se pudo guardar la canción.");
-    }
-    if (!Array.isArray(contenido.data)) {
-      throw new Error("La respuesta del servidor no contiene una lista.");
-    }
-
-    canciones = contenido.data;
-    renderizarCanciones(canciones);
-    salirModoEdicion();
-    mostrarMensaje(editando ? "Cambios guardados" : "Canción añadida");
-  } catch (error) {
-    if (error instanceof TypeError) {
-      mostrarMensaje(
-        "No se ha podido confirmar la operación. Recarga la página y revisa la lista antes de reenviar.",
-      );
-    } else {
-      mostrarMensaje("Error: " + error.message);
-    }
-  } finally {
-    bloquearAcciones(false);
-  }
+  ejecutarCambio(
+    editando ? "update" : "create",
+    datos,
+    "Guardando…",
+    editando ? "Cambios guardados" : "Canción añadida",
+    salirModoEdicion,
+  );
 }
 
-async function eliminarCancion(id) {
+function eliminarCancion(id) {
   if (!Number.isInteger(id) || id < 1) {
     mostrarMensaje("Error: identificador no válido.");
     return;
@@ -225,50 +239,23 @@ async function eliminarCancion(id) {
     return;
   }
 
-  bloquearAcciones(true);
-  mostrarMensaje("Eliminando…");
-
-  try {
-    const respuesta = await fetch("api/catalogo.php?action=delete", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": leerToken(),
-      },
-      body: JSON.stringify({ id: id }),
-    });
-    const contenido = await respuesta.json();
-
-    if (!respuesta.ok || contenido.ok !== true) {
-      throw new Error(contenido.error || "No se pudo eliminar la canción.");
-    }
-    if (!Array.isArray(contenido.data)) {
-      throw new Error("La respuesta del servidor no contiene una lista.");
-    }
-
-    canciones = contenido.data;
-    if (idEditando === id) {
-      salirModoEdicion();
-    }
-    renderizarCanciones(canciones);
-    mostrarMensaje("Canción eliminada");
-  } catch (error) {
-    if (error instanceof TypeError) {
-      mostrarMensaje(
-        "No se ha podido confirmar la eliminación. Recarga la página y revisa la lista antes de reintentar.",
-      );
-    } else {
-      mostrarMensaje("Error: " + error.message);
-    }
-  } finally {
-    bloquearAcciones(false);
-  }
+  ejecutarCambio(
+    "delete",
+    { id: id },
+    "Eliminando…",
+    "Canción eliminada",
+    () => {
+      if (idEditando === id) {
+        salirModoEdicion();
+      }
+    },
+  );
 }
 
 tbody.addEventListener("click", (evento) => {
-  const boton = evento.target.closest('button[data-accion]');
-  if (boton && !operacionEnCurso) {
-    iniciarEdicion(Number(boton.dataset.id));
+  const boton = evento.target.closest("button[data-accion]");
+  if (!boton || operacionEnCurso) {
+    return;
   }
   const id = Number(boton.dataset.id);
   if (boton.dataset.accion === "editar") {
