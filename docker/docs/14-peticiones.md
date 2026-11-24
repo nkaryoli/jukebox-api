@@ -28,7 +28,7 @@ Usuario → JavaScript con fetch (navegador) → api/catalogo.php (PHP, servidor
 | 404 | La canción no existe | La canción no existe. |
 | 405 | Método no permitido (cabecera Allow) | Método no permitido para esta acción. |
 | 415 | El cuerpo no es application/json | El contenido debe enviarse como application/json. |
-| 422 | Valores no válidos | La duración debe ser un entero entre 1 y 1800 segundos. |
+| 422 | Valores no válidos | La duración debe estar entre 1 y 1800 segundos. |
 | 500 | Fallo al leer o guardar el catálogo | No se pudo acceder al catálogo. |
 
 ## Qué probar y resultado esperado
