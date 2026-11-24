@@ -1,0 +1,114 @@
+[
+    {
+        "id": 1,
+        "title": "Yellow Sorrows",
+        "artist": "Marvrix",
+        "category": "rock",
+        "duration": 215,
+        "src": "audio\/song1.mp3"
+    },
+    {
+        "id": 2,
+        "title": "Paradise",
+        "artist": "Alana Jordan",
+        "category": "electronica",
+        "duration": 195,
+        "src": "audio\/song2.mp3"
+    },
+    {
+        "id": 3,
+        "title": "Yellow Mood",
+        "artist": "LP Studio Music",
+        "category": "bandas-sonoras",
+        "duration": 210,
+        "src": "audio\/song3.mp3"
+    },
+    {
+        "id": 4,
+        "title": "Turn it Louder",
+        "artist": "Aylex",
+        "category": "electronica",
+        "duration": 222,
+        "src": "audio\/song4.mp3"
+    },
+    {
+        "id": 5,
+        "title": "All Night",
+        "artist": "Burgundy",
+        "category": "electronica",
+        "duration": 188,
+        "src": "audio\/song5.mp3"
+    },
+    {
+        "id": 6,
+        "title": "Faster",
+        "artist": "Zambolino",
+        "category": "electronica",
+        "duration": 240,
+        "src": "audio\/song6.mp3"
+    },
+    {
+        "id": 7,
+        "title": "Combat",
+        "artist": "Damtaro",
+        "category": "bandas-sonoras",
+        "duration": 205,
+        "src": "audio\/song7.mp3"
+    },
+    {
+        "id": 8,
+        "title": "Atmospheric Guitar",
+        "artist": "Pufino",
+        "category": "rock",
+        "duration": 260,
+        "src": "audio\/song8.mp3"
+    },
+    {
+        "id": 9,
+        "title": "Cancion de Prueba",
+        "artist": "Artista de Prueba",
+        "category": "rock",
+        "duration": 140,
+        "src": "audio\/song1.mp3"
+    },
+    {
+        "id": 10,
+        "title": "Otra prueba",
+        "artist": "M83",
+        "category": "electronica",
+        "duration": 200,
+        "src": "audio\/song11.mp3"
+    },
+    {
+        "id": 11,
+        "title": "Cancion de Prueba",
+        "artist": "Artista de prueba",
+        "category": "rock",
+        "duration": 200,
+        "src": "audio\/song1.mp3"
+    },
+    {
+        "id": 12,
+        "title": "otra",
+        "artist": "otra",
+        "category": "bandas-sonoras",
+        "duration": 210,
+        "src": "audio\/song12.mp3"
+    },
+    {
+        "id": 13,
+        "title": "Cancion desde ajax editada",
+        "artist": "Artista desde ajax",
+        "category": "electronica",
+        "duration": 320,
+        "src": "audio\/song13.mp3"
+    },
+    {
+        "id": 14,
+        "title": "Prueba recarga",
+        "artist": "Artista de prueba",
+        "category": "electronica",
+        "duration": 258,
+        "src": "audio\/song7.mp3"
+    }
+]
